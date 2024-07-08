@@ -1,23 +1,19 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
-import { Link, useHistory } from 'react-router-dom';
-import MenuIcon from '@mui/icons-material/Menu';
+import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem('token');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    history.push('/login');
+    navigate('/login');
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton edge="start" color="inherit" aria-label="menu">
-          <MenuIcon />
-        </IconButton>
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           Virtual Classroom
         </Typography>
