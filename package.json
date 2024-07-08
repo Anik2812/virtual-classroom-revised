@@ -1,0 +1,33 @@
+{
+  "name": "virtual-classroom",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.16.0",
+    "@mui/material": "^5.16.0",
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "framer-motion": "^11.2.13",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.5",
+    "react-particles": "^2.12.2",
+    "react-router-dom": "^6.24.1",
+    "react-spring": "^9.7.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

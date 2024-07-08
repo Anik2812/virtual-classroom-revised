@@ -1,0 +1,74 @@
+const express = require('express');
+const Assignment = require('../models/Assignment');
+const Submission = require('../models/Submission');
+const auth = require('../middleware/auth');
+const router = new express.Router();
+
+// Create a new assignment
+router.post('/', auth, async (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).send({ error: 'Only teachers can create assignments' });
+  }
+  const assignment = new Assignment({
+    ...req.body,
+    teacher: req.user._id,
+  });
+  try {
+    await assignment.save();
+    res.status(201).send(assignment);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+// Get all assignments for a class
+router.get('/class/:classId', auth, async (req, res) => {
+  try {
+    const assignments = await Assignment.find({ class: req.params.classId });
+    res.send(assignments);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// Submit an assignment
+router.post('/:id/submit', auth, async (req, res) => {
+  if (req.user.role !== 'student') {
+    return res.status(403).send({ error: 'Only students can submit assignments' });
+  }
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment) {
+      return res.status(404).send();
+    }
+    const submission = new Submission({
+      assignment: assignment._id,
+      student: req.user._id,
+      content: req.body.content,
+    });
+    await submission.save();
+    res.status(201).send(submission);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+// Grade a submission
+router.post('/:id/grade', auth, async (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).send({ error: 'Only teachers can grade submissions' });
+  }
+  try {
+    const submission = await Submission.findById(req.params.id);
+    if (!submission) {
+      return res.status(404).send();
+    }
+    submission.grade = req.body.grade;
+    await submission.save();
+    res.send(submission);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+module.exports = router;
