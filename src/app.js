@@ -12,6 +12,10 @@ const assignmentRouter = require('./routes/assignment');
 
 const app = express();
 
+app.get('/', (req, res) => {
+  res.send('Welcome to EduVerse API');
+});
+
 app.use(cors());
 app.use(express.json());
 app.use('/api/users', userRouter);

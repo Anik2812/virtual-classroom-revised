@@ -14,6 +14,7 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
     res.status(201).send({ user, token });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(400).send(error);
   }
 });
@@ -32,6 +33,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
     res.send({ user, token });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(400).send(error);
   }
 });
