@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 
 const classSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  description: { type: String },
   teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  schedule: { type: String },
-  createdAt: { type: Date, default: Date.now },
+  description: { type: String },
+  schedule: { type: String }
 });
 
-module.exports = mongoose.model('Class', classSchema);
+const Class = mongoose.model('Class', classSchema);
+module.exports = Class;

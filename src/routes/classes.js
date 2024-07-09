@@ -3,6 +3,16 @@ const Class = require('../models/Class');
 const auth = require('../middleware/auth');
 const router = new express.Router();
 
+// Get all classes (without authentication, for registration)
+router.get('/all', async (req, res) => {
+  try {
+    const classes = await Class.find({}, 'name');
+    res.status(200).json(classes);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Create a new class
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'teacher') {
@@ -14,27 +24,15 @@ router.post('/', auth, async (req, res) => {
   });
   try {
     await newClass.save();
+    req.user.classes.push(newClass._id);
+    await req.user.save();
     res.status(201).send(newClass);
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
-// Get class by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const classId = req.params.id;
-    const cls = await Class.findById(classId);
-    if (!cls) {
-      return res.status(404).json({ error: 'Class not found' });
-    }
-    res.status(200).json(cls);
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get all classes (for teachers) or enrolled classes (for students)
+// Get all classes for the authenticated user
 router.get('/', auth, async (req, res) => {
   try {
     let classes;
@@ -92,6 +90,8 @@ router.delete('/:id', auth, async (req, res) => {
     if (!classItem) {
       return res.status(404).send();
     }
+    req.user.classes = req.user.classes.filter(classId => classId.toString() !== req.params.id);
+    await req.user.save();
     res.send(classItem);
   } catch (error) {
     res.status(500).send(error);

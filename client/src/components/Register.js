@@ -10,6 +10,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [classId, setClassId] = useState('');
+  const [className, setClassName] = useState('');
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -17,10 +18,11 @@ const Register = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await api.get('/classes');
+        const response = await api.get('/classes/all');
         setClasses(response.data);
       } catch (err) {
         console.error('Error fetching classes:', err);
+        setError('An error occurred while fetching classes. Please try again later.');
       }
     };
     fetchClasses();
@@ -32,11 +34,19 @@ const Register = () => {
       const userData = { username, email, password, role };
       if (role === 'student') {
         userData.classId = classId;
+      } else if (role === 'teacher') {
+        userData.className = className;
       }
-      await api.post('/users/register', userData);
-      navigate('/login');
+      const response = await api.post('/users/register', userData);
+      localStorage.setItem('token', response.data.token);
+      navigate(role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard');
     } catch (err) {
-      setError('Registration failed');
+      console.error('Registration error:', err);
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     }
   };
 
@@ -100,6 +110,16 @@ const Register = () => {
                 ))}
               </Select>
             </FormControl>
+          )}
+          {role === 'teacher' && (
+            <TextField
+              label="Class Name"
+              fullWidth
+              margin="normal"
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
+              required
+            />
           )}
           {error && <Typography color="error">{error}</Typography>}
           <Button type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: '1rem' }}>

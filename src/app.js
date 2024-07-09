@@ -6,8 +6,8 @@ const dotenv = require('dotenv');
 // Load environment variables from .env file
 dotenv.config();
 
-const userRouter = require('./routes/user');
-const classRouter = require('./routes/class');
+const userRouter = require('./routes/users');
+const classRouter = require('./routes/classes');
 const assignmentRouter = require('./routes/assignment');
 
 const app = express();
