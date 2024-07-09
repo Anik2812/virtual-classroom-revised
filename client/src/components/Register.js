@@ -8,7 +8,7 @@ const Register = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState('student');
   const [classId, setClassId] = useState('');
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState('');

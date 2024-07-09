@@ -12,6 +12,7 @@ import ClassRoom from './components/ClassRoom';
 import Assignments from './components/Assignments';
 import Profile from './components/Profile';
 import { AnimatePresence } from 'framer-motion';
+import ClassDashboard from './components/ClassDashboard';
 
 const theme = createTheme({
   palette: {
@@ -71,6 +72,7 @@ function App() {
             <Route path="/classroom/:id" element={<PrivateRoute><ClassRoom /></PrivateRoute>} />
             <Route path="/assignments" element={<PrivateRoute><Assignments /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/dashboard/:classId" element={<ClassDashboard />} />
           </Routes>
         </AnimatePresence>
       </Router>

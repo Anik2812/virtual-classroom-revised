@@ -20,6 +20,20 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// Get class by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const cls = await Class.findById(classId);
+    if (!cls) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    res.status(200).json(cls);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get all classes (for teachers) or enrolled classes (for students)
 router.get('/', auth, async (req, res) => {
   try {
