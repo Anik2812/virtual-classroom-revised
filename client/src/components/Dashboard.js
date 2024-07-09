@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Container, Grid, Paper, Button, Modal, TextField, Box } from '@mui/material';
+import { Typography, Container, Grid, Paper, Button, CircularProgress, Modal, Box, TextField } from '@mui/material';
 import { motion } from 'framer-motion';
 import api from '../api/axios';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const [classes, setClasses] = useState([]);
+  const [classData, setClassData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newClassName, setNewClassName] = useState('');
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/users/profile');
-        setUser(response.data);
+        const userResponse = await api.get('/users/profile');
+        setUser(userResponse.data);
+
+        if (userResponse.data.role === 'student') {
+          const classResponse = await api.get(`/classes/${userResponse.data.classId}`);
+          setClassData(classResponse.data);
+        } else {
+          const classesResponse = await api.get('/classes');
+          setClassData(classesResponse.data);
+        }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchClasses = async () => {
-      try {
-        const response = await api.get('/classes');
-        setClasses(response.data);
-      } catch (error) {
-        console.error('Error fetching classes:', error);
-      }
-    };
-
-    fetchUserData();
-    fetchClasses();
+    fetchData();
   }, []);
 
   const handleOpen = () => setOpen(true);
@@ -38,7 +39,7 @@ const Dashboard = () => {
   const handleCreateClass = async () => {
     try {
       const response = await api.post('/classes', { name: newClassName });
-      setClasses([...classes, response.data]);
+      setClassData([...classData, response.data]);
       setNewClassName('');
       handleClose();
     } catch (error) {
@@ -46,17 +47,20 @@ const Dashboard = () => {
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  };
+  if (loading) {
+    return (
+      <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" style={{ marginTop: '2rem' }}>
       <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
         <Typography variant="h3" gutterBottom>
           Welcome, {user?.username}!
@@ -65,13 +69,17 @@ const Dashboard = () => {
           <Grid item xs={12} md={4}>
             <Paper elevation={3} style={{ padding: '1rem' }}>
               <Typography variant="h5" gutterBottom>
-                Your Classes
+                {user?.role === 'student' ? 'Your Class' : 'Your Classes'}
               </Typography>
-              {classes.map((cls) => (
-                <Button key={cls._id} variant="outlined" fullWidth style={{ marginBottom: '0.5rem' }}>
-                  {cls.name}
-                </Button>
-              ))}
+              {user?.role === 'student' ? (
+                <Typography>{classData?.name}</Typography>
+              ) : (
+                classData?.map((cls) => (
+                  <Button key={cls._id} variant="outlined" fullWidth style={{ marginBottom: '0.5rem' }}>
+                    {cls.name}
+                  </Button>
+                ))
+              )}
             </Paper>
           </Grid>
           <Grid item xs={12} md={4}>

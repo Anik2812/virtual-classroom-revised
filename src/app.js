@@ -12,19 +12,25 @@ const assignmentRouter = require('./routes/assignment');
 
 const app = express();
 
+// CORS Configuration
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow specific HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
+}));
+
 app.get('/', (req, res) => {
   res.send('Welcome to EduVerse API');
 });
 
+// Middleware to log request method and URL
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 
-
-app.use(cors());
 app.use(express.json());
-app.use('/api/users', userRouter);
+app.use('/api/users', userRouter); // Correct route path for users
 app.use('/api/classes', classRouter);
 app.use('/api/assignments', assignmentRouter);
 

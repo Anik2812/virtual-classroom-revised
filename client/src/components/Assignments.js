@@ -27,25 +27,28 @@ const Assignments = () => {
     const fetchAssignments = async () => {
       try {
         const response = await api.get('/assignments');
+        console.log('Assignments fetched:', response.data);
         setAssignments(response.data);
       } catch (error) {
         console.error('Error fetching assignments:', error);
       }
     };
-
+  
     const fetchUserRole = async () => {
       try {
         const response = await api.get('/users/profile');
+        console.log('User role fetched:', response.data.role);
         setUserRole(response.data.role);
       } catch (error) {
         console.error('Error fetching user role:', error);
       }
     };
-
+  
     fetchAssignments();
     fetchUserRole();
   }, []);
 
+  
   const handleCreateAssignment = async () => {
     try {
       const response = editMode

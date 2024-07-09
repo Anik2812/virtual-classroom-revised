@@ -4,7 +4,7 @@ const Submission = require('../models/Submission');
 const auth = require('../middleware/auth');
 const router = new express.Router();
 
-// Create a new assignment
+// Create an assignment
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'teacher') {
     return res.status(403).send({ error: 'Only teachers can create assignments' });
@@ -21,15 +21,18 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Get all assignments for a class
-router.get('/class/:classId', auth, async (req, res) => {
+// Get all assignments
+router.get('/', auth, async (req, res) => {
+  console.log('GET /api/assignments hit');
   try {
-    const assignments = await Assignment.find({ class: req.params.classId });
+    const assignments = await Assignment.find({});
     res.send(assignments);
   } catch (error) {
+    console.error('Error fetching assignments:', error);
     res.status(500).send(error);
   }
 });
+
 
 // Submit an assignment
 router.post('/:id/submit', auth, async (req, res) => {

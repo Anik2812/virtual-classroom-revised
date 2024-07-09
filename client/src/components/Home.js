@@ -2,6 +2,9 @@ import React from 'react';
 import { Typography, Container, Button, Grid, Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import SchoolIcon from '@mui/icons-material/School';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import ChatIcon from '@mui/icons-material/Chat';
 
 const Home = () => {
   return (
@@ -22,7 +25,7 @@ const Home = () => {
                 Welcome to Virtual Classroom
               </Typography>
               <Typography variant="h5" paragraph>
-                An interactive learning experience for students and teachers.
+                Experience interactive learning like never before.
               </Typography>
               <Button component={Link} to="/login" variant="contained" color="primary" size="large" style={{ marginRight: '1rem' }}>
                 Login
@@ -38,22 +41,36 @@ const Home = () => {
               animate={{ y: 0 }}
               transition={{ type: 'spring', stiffness: 120, delay: 0.5 }}
             >
-              <Paper elevation={3} style={{ padding: '2rem', borderRadius: '15px' }}>
+              <Paper elevation={3} style={{ padding: '2rem', borderRadius: '15px', backgroundColor: '#f0f4f8' }}>
                 <Typography variant="h4" gutterBottom>
                   Features
                 </Typography>
-                <Typography variant="body1" paragraph>
-                  • Interactive live classes
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  • Real-time chat and discussions
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  • Assignment submission and grading
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  • Resource sharing and management
-                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Paper elevation={2} style={{ padding: '1rem', display: 'flex', alignItems: 'center' }}>
+                      <SchoolIcon style={{ marginRight: '1rem', color: '#3f51b5' }} />
+                      <Typography variant="body1">
+                        Interactive live classes with real-time collaboration
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Paper elevation={2} style={{ padding: '1rem', display: 'flex', alignItems: 'center' }}>
+                      <AssignmentIcon style={{ marginRight: '1rem', color: '#f50057' }} />
+                      <Typography variant="body1">
+                        Easy assignment submission and grading system
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Paper elevation={2} style={{ padding: '1rem', display: 'flex', alignItems: 'center' }}>
+                      <ChatIcon style={{ marginRight: '1rem', color: '#4caf50' }} />
+                      <Typography variant="body1">
+                        Real-time chat and discussion forums for each class
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
               </Paper>
             </motion.div>
           </Grid>
