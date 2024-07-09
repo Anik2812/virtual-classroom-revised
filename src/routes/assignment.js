@@ -53,6 +53,38 @@ router.post('/:id/submit', auth, async (req, res) => {
   }
 });
 
+// Update an assignment
+router.patch('/:id', auth, async (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).send({ error: 'Only teachers can update assignments' });
+  }
+  try {
+    const assignment = await Assignment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!assignment) {
+      return res.status(404).send();
+    }
+    res.send(assignment);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+// Delete an assignment
+router.delete('/:id', auth, async (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).send({ error: 'Only teachers can delete assignments' });
+  }
+  try {
+    const assignment = await Assignment.findByIdAndDelete(req.params.id);
+    if (!assignment) {
+      return res.status(404).send();
+    }
+    res.send(assignment);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
 // Grade a submission
 router.post('/:id/grade', auth, async (req, res) => {
   if (req.user.role !== 'teacher') {
