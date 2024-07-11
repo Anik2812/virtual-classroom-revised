@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const router = new express.Router();
 
 // Create an assignment
+// Create an assignment
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'teacher') {
     return res.status(403).send({ error: 'Only teachers can create assignments' });
@@ -17,13 +18,15 @@ router.post('/', auth, async (req, res) => {
     await assignment.save();
     res.status(201).send(assignment);
   } catch (error) {
-    res.status(400).send(error);
+    console.error('Error creating assignment:', error);
+    res.status(400).send({ error: 'Invalid request data' });
   }
 });
 
+
 // Get all assignments
 router.get('/', auth, async (req, res) => {
-  console.log('GET /api/assignments hit');
+  console.log('GET /assignments hit');
   try {
     const assignments = await Assignment.find({});
     res.send(assignments);

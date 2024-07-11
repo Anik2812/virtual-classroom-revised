@@ -38,7 +38,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.get('/api/users/profile', auth, (req, res) => {
+// Profile route
+router.get('/profile', auth, (req, res) => {
   res.json({ role: req.user.role });
 });
 

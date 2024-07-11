@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, Grid, Paper, Typography, Button, TextField, List, ListItem,
   ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
-  Input
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
@@ -42,7 +41,12 @@ const Assignments = () => {
       const response = await api.get('/assignments');
       setAssignments(response.data);
     } catch (error) {
-      console.error('Error fetching assignments:', error);
+      if (error.code === 'ECONNABORTED') {
+        console.error('Request aborted. Retrying...');
+        fetchAssignments();
+      } else {
+        console.error('Error fetching assignments:', error);
+      }
     }
   };
 
@@ -51,7 +55,14 @@ const Assignments = () => {
       const response = await api.get('/users/profile');
       setUserRole(response.data.role);
     } catch (error) {
-      console.error('Error fetching user role:', error);
+      if (error.code === 'ECONNABORTED') {
+        console.error('Request aborted. Retrying...');
+        fetchUserRole();
+      } else if (error.response && error.response.status === 404) {
+        console.error('User profile not found.');
+      } else {
+        console.error('Error fetching user role:', error);
+      }
     }
   };
 
@@ -59,7 +70,11 @@ const Assignments = () => {
     try {
       const response = editMode
         ? await api.patch(`/assignments/${selectedAssignment._id}`, newAssignment)
-        : await api.post('/assignments', newAssignment);
+        : await api.post('/assignments', {
+            title: newAssignment.title,
+            description: newAssignment.description,
+            dueDate: newAssignment.dueDate,
+          });
       setAssignments(editMode
         ? assignments.map(a => a._id === response.data._id ? response.data : a)
         : [...assignments, response.data]);
@@ -68,7 +83,11 @@ const Assignments = () => {
       setEditMode(false);
       setSelectedAssignment(null);
     } catch (error) {
-      console.error('Error creating/editing assignment:', error);
+      if (error.response && error.response.status === 400) {
+        console.error('Invalid request data:', error.response.data);
+      } else {
+        console.error('Error creating/editing assignment:', error);
+      }
     }
   };
 
@@ -77,7 +96,11 @@ const Assignments = () => {
       await api.delete(`/assignments/${id}`);
       setAssignments(assignments.filter(a => a._id !== id));
     } catch (error) {
-      console.error('Error deleting assignment:', error);
+      if (error.response && error.response.status === 400) {
+        console.error('Invalid request data:', error);
+      } else {
+        console.error('Error deleting assignment:', error);
+      }
     }
   };
 
@@ -105,7 +128,11 @@ const Assignments = () => {
       fetchAssignments();
       setFile(null);
     } catch (error) {
-      console.error('Error uploading assignment:', error);
+      if (error.response && error.response.status === 400) {
+        console.error('Invalid request data:', error);
+      } else {
+        console.error('Error uploading assignment:', error);
+      }
     }
   };
 
@@ -118,7 +145,11 @@ const Assignments = () => {
       setGrade('');
       setFeedback('');
     } catch (error) {
-      console.error('Error submitting grade:', error);
+      if (error.response && error.response.status === 400) {
+        console.error('Invalid request data:', error);
+      } else {
+        console.error('Error submitting grade:', error);
+      }
     }
   };
 
@@ -162,26 +193,14 @@ const Assignments = () => {
                   <Typography variant="body2">Due: {new Date(selectedAssignment.dueDate).toLocaleDateString()}</Typography>
                   {userRole === 'student' && (
                     <>
-                      <StyledInput
-                        accept="application/pdf"
-                        id="contained-button-file"
-                        type="file"
-                        onChange={handleFileChange}
-                      />
-                      <label htmlFor="contained-button-file">
+                      <StyledInput accept="file/*" id="upload-file" type="file" onChange={handleFileChange} />
+                      <label htmlFor="upload-file">
                         <Button variant="contained" component="span" startIcon={<UploadIcon />}>
-                          Choose File
+                          Upload Assignment
                         </Button>
                       </label>
-                      {file && <Typography variant="body2">{file.name}</Typography>}
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleUpload}
-                        disabled={!file}
-                        style={{ marginTop: '1rem' }}
-                      >
-                        Upload
+                      <Button variant="contained" onClick={handleUpload} disabled={!file} style={{ marginTop: '1rem' }}>
+                        Submit
                       </Button>
                     </>
                   )}
@@ -189,27 +208,21 @@ const Assignments = () => {
                     <>
                       <TextField
                         label="Grade"
-                        type="number"
                         value={grade}
                         onChange={(e) => setGrade(e.target.value)}
                         fullWidth
-                        margin="normal"
+                        style={{ marginTop: '1rem' }}
                       />
                       <TextField
                         label="Feedback"
-                        multiline
-                        rows={4}
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
+                        multiline
+                        rows={4}
                         fullWidth
-                        margin="normal"
-                      />
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleGradeSubmit}
                         style={{ marginTop: '1rem' }}
-                      >
+                      />
+                      <Button variant="contained" onClick={handleGradeSubmit} style={{ marginTop: '1rem' }}>
                         Submit Grade
                       </Button>
                     </>
@@ -220,51 +233,51 @@ const Assignments = () => {
           </Grid>
         </Grid>
         {userRole === 'teacher' && (
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ marginTop: '1rem' }}
-            onClick={() => setOpenDialog(true)}
-          >
-            {editMode ? 'Edit Assignment' : 'Create New Assignment'}
+          <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)} style={{ marginTop: '2rem' }}>
+            Add New Assignment
           </Button>
         )}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
+          <DialogTitle>{editMode ? 'Edit Assignment' : 'New Assignment'}</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Title"
+              value={newAssignment.title}
+              onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Description"
+              value={newAssignment.description}
+              onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
+              multiline
+              rows={4}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Due Date"
+              type="date"
+              value={newAssignment.dueDate}
+              onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
+              fullWidth
+              margin="normal"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleCreateAssignment} color="primary">
+              {editMode ? 'Save Changes' : 'Create Assignment'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editMode ? 'Edit Assignment' : 'Create New Assignment'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Title"
-            fullWidth
-            value={newAssignment.title}
-            onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Description"
-            fullWidth
-            multiline
-            rows={4}
-            value={newAssignment.description}
-            onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Due Date"
-            type="date"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={newAssignment.dueDate}
-            onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">Cancel</Button>
-          <Button onClick={handleCreateAssignment} color="primary">{editMode ? 'Save Changes' : 'Create'}</Button>
-        </DialogActions>
-      </Dialog>
     </motion.div>
   );
 };

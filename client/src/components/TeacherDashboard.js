@@ -17,7 +17,7 @@ const TeacherDashboard = () => {
 
   const fetchClasses = async () => {
     try {
-      const response = await api.get('/api/classes');
+      const response = await api.get('/classes');
       setClasses(response.data);
       setLoading(false);
     } catch (error) {
@@ -31,7 +31,7 @@ const TeacherDashboard = () => {
 
   const handleCreateClass = async () => {
     try {
-      const response = await api.post('/api/classes', { name: newClassName });
+      const response = await api.post('/classes', { name: newClassName });
       setClasses([...classes, response.data]);
       setNewClassName('');
       handleClose();

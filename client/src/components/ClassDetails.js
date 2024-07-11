@@ -1,4 +1,3 @@
-// src/components/ClassDetails.js
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Typography, Paper, List, ListItem, ListItemText } from '@mui/material';
@@ -14,10 +13,15 @@ const ClassDetails = () => {
 
   const fetchClassDetails = async () => {
     try {
-      const response = await api.get(`/api/classes/${classId}`);
+      const response = await api.get(`/classes/${classId}`);
       setClassDetails(response.data);
     } catch (error) {
-      console.error('Error fetching class details:', error);
+      if (error.code === 'ECONNABORTED') {
+        console.error('Request aborted. Retrying...');
+        fetchClassDetails();
+      } else {
+        console.error('Error fetching class details:', error);
+      }
     }
   };
 
