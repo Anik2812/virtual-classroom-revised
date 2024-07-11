@@ -16,7 +16,7 @@ const handleSubmit = async (e) => {
     const response = await api.post('/users/login', { email, password });
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('userRole', response.data.user.role);
-    navigate(response.data.user.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard');
+    navigate(response.data.user.role === 'teacher' ? '/dashboard' : '/dashboard');
   } catch (err) {
     setError('Invalid email or password');
   }

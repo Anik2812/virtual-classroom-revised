@@ -1,7 +1,7 @@
-// src/components/TeacherDashboard.js
 import React, { useState, useEffect } from 'react';
 import { Typography, Container, Grid, Paper, Button, CircularProgress, Modal, Box, TextField } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
 const TeacherDashboard = () => {
@@ -9,6 +9,7 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newClassName, setNewClassName] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchClasses();
@@ -48,6 +49,10 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleViewClass = (classId) => {
+    navigate(`/class/${classId}`);
+  };
+
   if (loading) {
     return (
       <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -84,6 +89,7 @@ const TeacherDashboard = () => {
                   color="primary"
                   fullWidth
                   style={{ marginTop: '1rem' }}
+                  onClick={() => handleViewClass(cls._id)}
                 >
                   View Class
                 </Button>

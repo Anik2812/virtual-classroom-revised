@@ -18,7 +18,7 @@ const Register = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await api.get('/api/classes/all');
+        const response = await api.get('/classes/all');
         setClasses(response.data);
       } catch (err) {
         console.error('Error fetching classes:', err);
@@ -35,7 +35,7 @@ const Register = () => {
       if (role === 'student') {
         userData.classId = classId;
       }
-      const response = await api.post('/api/users/register', userData);
+      const response = await api.post('/users/register', userData);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('userRole', response.data.user.role);
       navigate('/dashboard');

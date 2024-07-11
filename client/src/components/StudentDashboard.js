@@ -14,7 +14,7 @@ const StudentDashboard = () => {
 
   const fetchClassData = async () => {
     try {
-      const response = await api.get('/api/classes');
+      const response = await api.get('/classes');
       setClassData(response.data[0]); // Assuming student is in only one class
       setLoading(false);
     } catch (error) {

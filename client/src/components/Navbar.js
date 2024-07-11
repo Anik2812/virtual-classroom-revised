@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import MenuIcon from '@mui/icons-material/Menu';
 
 const Navbar = () => {
   const navigate = useNavigate();

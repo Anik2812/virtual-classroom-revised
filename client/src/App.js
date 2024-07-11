@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Home from './components/Home';
@@ -10,6 +9,8 @@ import StudentDashboard from './components/StudentDashboard';
 import Assignments from './components/Assignments';
 import Profile from './components/Profile';
 import PrivateRoute from './components/PrivateRoute';
+import ClassDetails from './components/ClassDetails';
+
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/class/:classId" element={<ClassDetails />} />
         <Route 
           path="/dashboard" 
           element={
@@ -43,6 +45,7 @@ const App = () => {
             </PrivateRoute>
           } 
         />
+        
       </Routes>
     </Router>
   );

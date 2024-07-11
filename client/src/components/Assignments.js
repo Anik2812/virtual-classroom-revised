@@ -1,11 +1,13 @@
+// src/components/Assignments.js
 import React, { useState, useEffect } from 'react';
 import {
   Container, Grid, Paper, Typography, Button, TextField, List, ListItem,
-  ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, IconButton
+  ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
+  Input
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Upload as UploadIcon } from '@mui/icons-material';
 import api from '../api/axios';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -15,40 +17,44 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   flexDirection: 'column',
 }));
 
+const StyledInput = styled('input')({
+  display: 'none',
+});
+
 const Assignments = () => {
   const [assignments, setAssignments] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [newAssignment, setNewAssignment] = useState({ title: '', description: '', dueDate: '' });
-  const [userRole, setUserRole] = useState('student');
+  const [userRole, setUserRole] = useState('teacher');
+  const [file, setFile] = useState(null);
+  const [grade, setGrade] = useState('');
+  const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const response = await api.get('/assignments');
-        console.log('Assignments fetched:', response.data);
-        setAssignments(response.data);
-      } catch (error) {
-        console.error('Error fetching assignments:', error);
-      }
-    };
-  
-    const fetchUserRole = async () => {
-      try {
-        const response = await api.get('/users/profile');
-        console.log('User role fetched:', response.data.role);
-        setUserRole(response.data.role);
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      }
-    };
-  
     fetchAssignments();
     fetchUserRole();
   }, []);
 
-  
+  const fetchAssignments = async () => {
+    try {
+      const response = await api.get('/assignments');
+      setAssignments(response.data);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    }
+  };
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await api.get('/users/profile');
+      setUserRole(response.data.role);
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+    }
+  };
+
   const handleCreateAssignment = async () => {
     try {
       const response = editMode
@@ -62,7 +68,7 @@ const Assignments = () => {
       setEditMode(false);
       setSelectedAssignment(null);
     } catch (error) {
-      console.error('Error creating assignment:', error);
+      console.error('Error creating/editing assignment:', error);
     }
   };
 
@@ -82,6 +88,40 @@ const Assignments = () => {
     setOpenDialog(true);
   };
 
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file || !selectedAssignment) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await api.post(`/assignments/${selectedAssignment._id}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      fetchAssignments();
+      setFile(null);
+    } catch (error) {
+      console.error('Error uploading assignment:', error);
+    }
+  };
+
+  const handleGradeSubmit = async () => {
+    if (!selectedAssignment) return;
+
+    try {
+      await api.post(`/assignments/${selectedAssignment._id}/grade`, { grade, feedback });
+      fetchAssignments();
+      setGrade('');
+      setFeedback('');
+    } catch (error) {
+      console.error('Error submitting grade:', error);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <Container maxWidth="lg" style={{ marginTop: '2rem' }}>
@@ -92,7 +132,7 @@ const Assignments = () => {
               <Typography variant="h5" gutterBottom>Assignment List</Typography>
               <List>
                 {assignments.map((assignment) => (
-                  <ListItem key={assignment._id} button>
+                  <ListItem key={assignment._id} button onClick={() => setSelectedAssignment(assignment)}>
                     <ListItemText
                       primary={assignment.title}
                       secondary={`Due: ${new Date(assignment.dueDate).toLocaleDateString()}`}
@@ -115,7 +155,67 @@ const Assignments = () => {
           <Grid item xs={12} md={4}>
             <StyledPaper elevation={3}>
               <Typography variant="h5" gutterBottom>Assignment Details</Typography>
-              {/* Add assignment details here */}
+              {selectedAssignment && (
+                <>
+                  <Typography variant="h6">{selectedAssignment.title}</Typography>
+                  <Typography variant="body1">{selectedAssignment.description}</Typography>
+                  <Typography variant="body2">Due: {new Date(selectedAssignment.dueDate).toLocaleDateString()}</Typography>
+                  {userRole === 'student' && (
+                    <>
+                      <StyledInput
+                        accept="application/pdf"
+                        id="contained-button-file"
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                      <label htmlFor="contained-button-file">
+                        <Button variant="contained" component="span" startIcon={<UploadIcon />}>
+                          Choose File
+                        </Button>
+                      </label>
+                      {file && <Typography variant="body2">{file.name}</Typography>}
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleUpload}
+                        disabled={!file}
+                        style={{ marginTop: '1rem' }}
+                      >
+                        Upload
+                      </Button>
+                    </>
+                  )}
+                  {userRole === 'teacher' && (
+                    <>
+                      <TextField
+                        label="Grade"
+                        type="number"
+                        value={grade}
+                        onChange={(e) => setGrade(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                      />
+                      <TextField
+                        label="Feedback"
+                        multiline
+                        rows={4}
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                      />
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleGradeSubmit}
+                        style={{ marginTop: '1rem' }}
+                      >
+                        Submit Grade
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
             </StyledPaper>
           </Grid>
         </Grid>
