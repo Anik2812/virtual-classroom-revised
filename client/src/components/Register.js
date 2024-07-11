@@ -1,3 +1,4 @@
+// src/components/Register.js
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Typography, Container, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,6 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [classId, setClassId] = useState('');
-  const [className, setClassName] = useState('');
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Register = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await api.get('/classes/all');
+        const response = await api.get('/api/classes/all');
         setClasses(response.data);
       } catch (err) {
         console.error('Error fetching classes:', err);
@@ -34,12 +34,11 @@ const Register = () => {
       const userData = { username, email, password, role };
       if (role === 'student') {
         userData.classId = classId;
-      } else if (role === 'teacher') {
-        userData.className = className;
       }
-      const response = await api.post('/users/register', userData);
+      const response = await api.post('/api/users/register', userData);
       localStorage.setItem('token', response.data.token);
-      navigate(role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard');
+      localStorage.setItem('userRole', response.data.user.role);
+      navigate('/dashboard');
     } catch (err) {
       console.error('Registration error:', err);
       if (err.response && err.response.data && err.response.data.message) {
@@ -110,16 +109,6 @@ const Register = () => {
                 ))}
               </Select>
             </FormControl>
-          )}
-          {role === 'teacher' && (
-            <TextField
-              label="Class Name"
-              fullWidth
-              margin="normal"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              required
-            />
           )}
           {error && <Typography color="error">{error}</Typography>}
           <Button type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: '1rem' }}>

@@ -1,34 +1,67 @@
+// src/components/StudentDashboard.js
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Typography, Container, Grid, Paper, CircularProgress } from '@mui/material';
+import { motion } from 'framer-motion';
 import api from '../api/axios';
 
 const StudentDashboard = () => {
-  const [classes, setClasses] = useState([]);
+  const [classData, setClassData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchClasses();
+    fetchClassData();
   }, []);
 
-  const fetchClasses = async () => {
+  const fetchClassData = async () => {
     try {
-      const response = await api.get('/classes');
-      setClasses(response.data);
+      const response = await api.get('/api/classes');
+      setClassData(response.data[0]); // Assuming student is in only one class
+      setLoading(false);
     } catch (error) {
-      console.error('Error fetching classes:', error);
+      console.error('Error fetching class data:', error);
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>Student Dashboard</Typography>
-      <Typography variant="h6" gutterBottom>Your Classes:</Typography>
-      <List>
-        {classes.map((cls) => (
-          <ListItem key={cls._id}>
-            <ListItemText primary={cls.name} secondary={`Teacher: ${cls.teacher.username}`} />
-          </ListItem>
-        ))}
-      </List>
+    <Container maxWidth="lg" style={{ marginTop: '2rem' }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Typography variant="h3" gutterBottom>
+          Student Dashboard
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper elevation={3} style={{ padding: '1rem' }}>
+              <Typography variant="h5">Your Class: {classData?.name}</Typography>
+              <Typography variant="body1">Teacher: {classData?.teacher?.username}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper elevation={3} style={{ padding: '1rem' }}>
+              <Typography variant="h5">Upcoming Assignments</Typography>
+              {/* Add assignment list here */}
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper elevation={3} style={{ padding: '1rem' }}>
+              <Typography variant="h5">Recent Grades</Typography>
+              {/* Add grades list here */}
+            </Paper>
+          </Grid>
+        </Grid>
+      </motion.div>
     </Container>
   );
 };

@@ -1,3 +1,4 @@
+// src/components/Navbar.js
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,15 +19,13 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
     navigate('/login');
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenu}>
-          <MenuIcon />
-        </IconButton>
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           Virtual Classroom
         </Typography>

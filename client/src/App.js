@@ -1,3 +1,4 @@
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Home from './components/Home';
@@ -6,21 +7,9 @@ import Register from './components/Register';
 import Login from './components/Login';
 import TeacherDashboard from './components/TeacherDashboard';
 import StudentDashboard from './components/StudentDashboard';
-
-const PrivateRoute = ({ children, role }) => {
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole');
-
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
-
-  if (role && userRole !== role) {
-    return <Navigate to={userRole === 'teacher' ? "/teacher-dashboard" : "/student-dashboard"} />;
-  }
-
-  return children;
-};
+import Assignments from './components/Assignments';
+import Profile from './components/Profile';
+import PrivateRoute from './components/PrivateRoute';
 
 const App = () => {
   return (
@@ -31,22 +20,29 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route 
-          path="/teacher-dashboard" 
+          path="/dashboard" 
           element={
-            <PrivateRoute role="teacher">
-              <TeacherDashboard />
+            <PrivateRoute>
+              {localStorage.getItem('userRole') === 'teacher' ? <TeacherDashboard /> : <StudentDashboard />}
             </PrivateRoute>
           } 
         />
         <Route 
-          path="/student-dashboard" 
+          path="/assignments" 
           element={
-            <PrivateRoute role="student">
-              <StudentDashboard />
+            <PrivateRoute>
+              <Assignments />
             </PrivateRoute>
           } 
         />
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route 
+          path="/profile" 
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          } 
+        />
       </Routes>
     </Router>
   );
