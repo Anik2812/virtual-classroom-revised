@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-// Load environment variables from .env file
 dotenv.config();
 
 const userRouter = require('./routes/users');
@@ -12,32 +11,16 @@ const assignmentRouter = require('./routes/assignment');
 
 const app = express();
 
-// CORS Configuration
 app.use(cors({
-  origin: 'http://localhost:3000', // Replace with your frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow specific HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.get('/', (req, res) => {
-  res.send('Welcome to EduVerse API');
-});
-
-// Middleware to log request method and URL
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
-
 app.use(express.json());
-app.use('/api/users', userRouter); // Correct route path for users
+app.use('/api/users', userRouter);
 app.use('/api/classes', classRouter);
 app.use('/api/assignments', assignmentRouter);
-
-// Check if MONGODB_URI is defined
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI environment variable is not set.');
-}
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,

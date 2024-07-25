@@ -1,9 +1,7 @@
-// api/axios.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Adjust this to match your backend URL
-  timeout: 5000, // Set a reasonable timeout
+  baseURL: 'http://localhost:5000/api',
 });
 
 api.interceptors.request.use((config) => {
@@ -13,5 +11,16 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

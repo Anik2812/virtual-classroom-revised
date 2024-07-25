@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Container, Grid, Paper, Button, CircularProgress, Modal, Box, TextField, Snackbar } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -13,27 +13,25 @@ const TeacherDashboard = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchClasses();
-  }, []);
-
-  const fetchClasses = async () => {
+  const fetchClasses = useCallback(async () => {
     try {
       const response = await api.get('/classes');
       setClasses(response.data);
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        console.error('Unauthorized access. Please login again.');
-        // Redirect to login page or show login modal
-      } else if (error.code === 'ECONNABORTED') {
-        console.error('Request timed out. Please try again.');
-        // Implement retry logic or show error message to user
-      } else {
-        console.error('Error fetching classes:', error);
-        // Show general error message to user
-      }
+      console.error('Error fetching classes:', error);
+      setClasses([
+        { _id: '1', name: 'Sample Class 1' },
+        { _id: '2', name: 'Sample Class 2' },
+      ]);
+      showSnackbar('Failed to fetch classes. Showing sample data.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -73,7 +71,6 @@ const TeacherDashboard = () => {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
-    setSnackbarMessage('');
   };
 
   if (loading) {

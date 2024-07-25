@@ -1,27 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Container, Grid, Paper, Typography, Button, TextField, List, ListItem,
-  ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
-  Snackbar, CircularProgress
+  Typography, Container, Button, CircularProgress, Modal, Box, TextField, Snackbar, List, ListItem, ListItemText
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import api from '../api/axios';
 
 const Assignments = () => {
   const [assignments, setAssignments] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [open, setOpen] = useState(false);
   const [newAssignment, setNewAssignment] = useState({ title: '', description: '', dueDate: '', class: '' });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  useEffect(() => {
-    fetchAssignments();
-  }, []);
-
-  const fetchAssignments = async () => {
+  const fetchAssignments = useCallback(async () => {
     try {
       const response = await api.get('/assignments');
       setAssignments(response.data);
@@ -32,44 +25,54 @@ const Assignments = () => {
         { _id: '2', title: 'Sample Assignment 2', description: 'This is another sample assignment', dueDate: '2023-07-15' },
       ]);
       showSnackbar('Failed to fetch assignments. Showing sample data.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
+
+  const fetchClasses = useCallback(async () => {
+    try {
+      const response = await api.get('/classes');
+      setClasses(response.data);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+      setClasses([
+        { _id: '1', name: 'Sample Class 1' },
+        { _id: '2', name: 'Sample Class 2' },
+      ]);
+      showSnackbar('Failed to fetch classes. Showing sample data.');
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await Promise.all([fetchAssignments(), fetchClasses()]);
+      setLoading(false);
+    };
+    fetchData();
+  }, [fetchAssignments, fetchClasses]);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const handleCreateAssignment = async () => {
     try {
-      const response = editMode
-        ? await api.patch(`/assignments/${selectedAssignment._id}`, newAssignment)
-        : await api.post('/assignments', newAssignment);
-      setAssignments(editMode
-        ? assignments.map(a => a._id === response.data._id ? response.data : a)
-        : [...assignments, response.data]);
-      setOpenDialog(false);
+      const response = await api.post('/assignments', newAssignment);
+      setAssignments([...assignments, response.data]);
       setNewAssignment({ title: '', description: '', dueDate: '', class: '' });
-      setEditMode(false);
-      setSelectedAssignment(null);
-      showSnackbar(editMode ? 'Assignment updated successfully' : 'Assignment created successfully');
+      handleClose();
+      showSnackbar('Assignment created successfully');
     } catch (error) {
-      console.error('Error creating/editing assignment:', error);
-      showSnackbar('Failed to create/edit assignment. Please try again.');
-    }
-  };
-
-  const handleDeleteAssignment = async (id) => {
-    try {
-      await api.delete(`/assignments/${id}`);
-      setAssignments(assignments.filter(a => a._id !== id));
-      showSnackbar('Assignment deleted successfully');
-    } catch (error) {
-      console.error('Error deleting assignment:', error);
-      showSnackbar('Failed to delete assignment. Please try again.');
+      console.error('Error creating assignment:', error);
+      showSnackbar('Failed to create assignment. Please try again.');
     }
   };
 
   const showSnackbar = (message) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   if (loading) {
@@ -82,42 +85,43 @@ const Assignments = () => {
 
   return (
     <Container maxWidth="lg" style={{ marginTop: '2rem' }}>
-      <Typography variant="h3" gutterBottom>Assignments</Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setOpenDialog(true)}
-        style={{ marginBottom: '1rem' }}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
-        Create New Assignment
-      </Button>
-      <Grid container spacing={3}>
-        {assignments.map((assignment) => (
-          <Grid item xs={12} sm={6} md={4} key={assignment._id}>
-            <Paper elevation={3} style={{ padding: '1rem' }}>
-              <Typography variant="h5">{assignment.title}</Typography>
-              <Typography variant="body1">{assignment.description}</Typography>
-              <Typography variant="body2">Due: {new Date(assignment.dueDate).toLocaleDateString()}</Typography>
-              <IconButton onClick={() => {
-                setSelectedAssignment(assignment);
-                setNewAssignment(assignment);
-                setEditMode(true);
-                setOpenDialog(true);
-              }}>
-                <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => handleDeleteAssignment(assignment._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editMode ? 'Edit Assignment' : 'Create New Assignment'}</DialogTitle>
-        <DialogContent>
+        <Typography variant="h3" gutterBottom>Assignments</Typography>
+        <Button variant="contained" color="primary" onClick={handleOpen} style={{ marginBottom: '1rem' }}>
+          Create New Assignment
+        </Button>
+        <List>
+          {assignments.map((assignment) => (
+            <ListItem key={assignment._id}>
+              <ListItemText
+                primary={assignment.title}
+                secondary={`Due: ${new Date(assignment.dueDate).toLocaleDateString()}`}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </motion.div>
+      <Modal open={open} onClose={handleClose} aria-labelledby="create-assignment-modal-title">
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          p: 4,
+        }}>
+          <Typography id="create-assignment-modal-title" variant="h6" component="h2">
+            Create New Assignment
+          </Typography>
           <TextField
             label="Title"
+            variant="outlined"
             fullWidth
             margin="normal"
             value={newAssignment.title}
@@ -125,16 +129,18 @@ const Assignments = () => {
           />
           <TextField
             label="Description"
+            variant="outlined"
             fullWidth
+            margin="normal"
             multiline
             rows={4}
-            margin="normal"
             value={newAssignment.description}
             onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
           />
           <TextField
             label="Due Date"
             type="date"
+            variant="outlined"
             fullWidth
             margin="normal"
             InputLabelProps={{ shrink: true }}
@@ -142,24 +148,30 @@ const Assignments = () => {
             onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
           />
           <TextField
+            select
             label="Class"
+            variant="outlined"
             fullWidth
             margin="normal"
             value={newAssignment.class}
             onChange={(e) => setNewAssignment({ ...newAssignment, class: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateAssignment} color="primary">
-            {editMode ? 'Save Changes' : 'Create'}
+          >
+            {classes.map((cls) => (
+              <option key={cls._id} value={cls._id}>
+                {cls.name}
+              </option>
+            ))}
+          </TextField>
+          
+          <Button variant="contained" color="primary" fullWidth onClick={handleCreateAssignment}>
+            Create
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </Modal>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={handleSnackbarClose}
         message={snackbarMessage}
       />
     </Container>
