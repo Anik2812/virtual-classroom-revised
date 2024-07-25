@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Typography, Container } from '@mui/material';
+import { TextField, Button, Typography, Container, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api/axios';
@@ -8,19 +8,39 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await api.post('/users/login', { email, password });
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('userRole', response.data.user.role);
-    navigate(response.data.user.role === 'teacher' ? '/dashboard' : '/dashboard');
-  } catch (err) {
-    setError('Invalid email or password');
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const response = await api.post('/users/login', { email, password });
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userRole', response.data.user.role);
+      setSnackbarOpen(true);
+      setTimeout(() => {
+        navigate(response.data.user.role === 'teacher' ? '/dashboard' : '/dashboard');
+      }, 1500);
+    } catch (err) {
+      console.error('Login error:', err);
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(err.response.data.message || 'Invalid email or password');
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please try again.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError('An error occurred. Please try again.');
+      }
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   return (
     <Container maxWidth="xs">
@@ -57,6 +77,12 @@ const handleSubmit = async (e) => {
           </Button>
         </form>
       </motion.div>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message="Login successful! Redirecting..."
+      />
     </Container>
   );
 };

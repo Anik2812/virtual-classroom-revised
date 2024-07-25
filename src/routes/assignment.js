@@ -4,32 +4,27 @@ const Submission = require('../models/Submission');
 const auth = require('../middleware/auth');
 const router = new express.Router();
 
-// src/routes/assignment.js
 router.post('/', auth, async (req, res) => {
-  if (req.user.role !== 'teacher') {
-    return res.status(403).send({ error: 'Only teachers can create assignments' });
-  }
-  
-  const { title, description, dueDate, class: classId } = req.body;
-  
-  if (!title || !description || !dueDate || !classId) {
-    return res.status(400).send({ error: 'Missing required fields' });
-  }
-
-  const assignment = new Assignment({
-    title,
-    description,
-    dueDate,
-    class: classId,
-    teacher: req.user._id,
-  });
-
   try {
+    const { title, description, dueDate, class: className } = req.body;
+
+    if (!title || !description || !dueDate || !className) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const assignment = new Assignment({
+      title,
+      description,
+      dueDate,
+      class: className,
+      teacher: req.user._id,
+    });
+
     await assignment.save();
-    res.status(201).send(assignment);
+    res.status(201).json(assignment);
   } catch (error) {
     console.error('Error creating assignment:', error);
-    res.status(400).send({ error: 'Invalid request data' });
+    res.status(400).json({ error: 'Invalid request data', details: error.message });
   }
 });
 

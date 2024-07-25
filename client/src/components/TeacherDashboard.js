@@ -9,6 +9,8 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newClassName, setNewClassName] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,10 +21,17 @@ const TeacherDashboard = () => {
     try {
       const response = await api.get('/classes');
       setClasses(response.data);
-      setLoading(false);
     } catch (error) {
-      console.error('Error fetching classes:', error);
-      setLoading(false);
+      if (error.response && error.response.status === 401) {
+        console.error('Unauthorized access. Please login again.');
+        // Redirect to login page or show login modal
+      } else if (error.code === 'ECONNABORTED') {
+        console.error('Request timed out. Please try again.');
+        // Implement retry logic or show error message to user
+      } else {
+        console.error('Error fetching classes:', error);
+        // Show general error message to user
+      }
     }
   };
 
@@ -35,24 +44,36 @@ const TeacherDashboard = () => {
       setClasses([...classes, response.data]);
       setNewClassName('');
       handleClose();
+      showSnackbar('Class created successfully');
     } catch (error) {
       console.error('Error creating class:', error);
+      showSnackbar('Failed to create class. Please try again.');
     }
   };
 
   const handleDeleteClass = async (classId) => {
-  try {
-    await api.delete(`/classes/${classId}`); // Remove the extra 'api' from the URL
-    setClasses(classes.filter((c) => c._id !== classId));
-    showSnackbar('Class deleted successfully');
-  } catch (error) {
-    console.error('Error deleting class:', error);
-    showSnackbar('Failed to delete class. Please try again.');
-  }
-};
+    try {
+      await api.delete(`/classes/${classId}`);
+      setClasses(classes.filter((c) => c._id !== classId));
+      showSnackbar('Class deleted successfully');
+    } catch (error) {
+      console.error('Error deleting class:', error);
+      showSnackbar('Failed to delete class. Please try again.');
+    }
+  };
 
   const handleViewClass = (classId) => {
     navigate(`/class/${classId}`);
+  };
+
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    setSnackbarMessage('');
   };
 
   if (loading) {
@@ -147,6 +168,12 @@ const TeacherDashboard = () => {
           </Button>
         </Box>
       </Modal>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+      />
     </Container>
   );
 };

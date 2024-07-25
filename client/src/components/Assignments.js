@@ -66,10 +66,20 @@ const Assignments = () => {
   };
 
   const handleCreateAssignment = async () => {
+    if (!newAssignment.title || !newAssignment.description || !newAssignment.dueDate || !newAssignment.class) {
+      showSnackbar('Please fill all required fields');
+      return;
+    }
+  
+    const formattedAssignment = {
+      ...newAssignment,
+      dueDate: new Date(newAssignment.dueDate).toISOString(),
+    };
+  
     try {
       const response = editMode
-        ? await api.patch(`/assignments/${selectedAssignment._id}`, newAssignment)
-        : await api.post('/assignments', newAssignment);
+        ? await api.patch(`/assignments/${selectedAssignment._id}`, formattedAssignment)
+        : await api.post('/assignments', formattedAssignment);
       setAssignments(editMode
         ? assignments.map(a => a._id === response.data._id ? response.data : a)
         : [...assignments, response.data]);
@@ -80,6 +90,8 @@ const Assignments = () => {
       showSnackbar(editMode ? 'Assignment updated successfully' : 'Assignment created successfully');
     } catch (error) {
       console.error('Error creating/editing assignment:', error);
+      console.error('Request data:', formattedAssignment);
+      console.error('Response:', error.response?.data);
       showSnackbar(`Failed to ${editMode ? 'update' : 'create'} assignment: ${error.response?.data?.error || 'Unknown error'}`);
     }
   };
