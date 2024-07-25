@@ -4,16 +4,26 @@ const Submission = require('../models/Submission');
 const auth = require('../middleware/auth');
 const router = new express.Router();
 
-// Create an assignment
-// Create an assignment
+// src/routes/assignment.js
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'teacher') {
     return res.status(403).send({ error: 'Only teachers can create assignments' });
   }
+  
+  const { title, description, dueDate, class: classId } = req.body;
+  
+  if (!title || !description || !dueDate || !classId) {
+    return res.status(400).send({ error: 'Missing required fields' });
+  }
+
   const assignment = new Assignment({
-    ...req.body,
+    title,
+    description,
+    dueDate,
+    class: classId,
     teacher: req.user._id,
   });
+
   try {
     await assignment.save();
     res.status(201).send(assignment);

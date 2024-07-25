@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Container, Grid, Paper, Button, CircularProgress, Modal, Box, TextField } from '@mui/material';
+import { Typography, Container, Grid, Paper, Button, CircularProgress, Modal, Box, TextField, Snackbar } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -41,13 +41,15 @@ const TeacherDashboard = () => {
   };
 
   const handleDeleteClass = async (classId) => {
-    try {
-      await api.delete(`/api/classes/${classId}`);
-      setClasses(classes.filter(cls => cls._id !== classId));
-    } catch (error) {
-      console.error('Error deleting class:', error);
-    }
-  };
+  try {
+    await api.delete(`/classes/${classId}`); // Remove the extra 'api' from the URL
+    setClasses(classes.filter((c) => c._id !== classId));
+    showSnackbar('Class deleted successfully');
+  } catch (error) {
+    console.error('Error deleting class:', error);
+    showSnackbar('Failed to delete class. Please try again.');
+  }
+};
 
   const handleViewClass = (classId) => {
     navigate(`/class/${classId}`);

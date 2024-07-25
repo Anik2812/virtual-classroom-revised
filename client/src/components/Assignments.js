@@ -1,8 +1,8 @@
-// src/components/Assignments.js
 import React, { useState, useEffect } from 'react';
 import {
   Container, Grid, Paper, Typography, Button, TextField, List, ListItem,
   ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
+  Snackbar,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
@@ -25,11 +25,13 @@ const Assignments = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [newAssignment, setNewAssignment] = useState({ title: '', description: '', dueDate: '' });
-  const [userRole, setUserRole] = useState('teacher');
+  const [newAssignment, setNewAssignment] = useState({ title: '', description: '', dueDate: '', class: '' });
+  const [userRole, setUserRole] = useState('student');
   const [file, setFile] = useState(null);
   const [grade, setGrade] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   useEffect(() => {
     fetchAssignments();
@@ -41,12 +43,13 @@ const Assignments = () => {
       const response = await api.get('/assignments');
       setAssignments(response.data);
     } catch (error) {
-      if (error.code === 'ECONNABORTED') {
-        console.error('Request aborted. Retrying...');
-        fetchAssignments();
-      } else {
-        console.error('Error fetching assignments:', error);
-      }
+      console.error('Error fetching assignments:', error);
+      // Provide some default assignments if the API call fails
+      setAssignments([
+        { _id: '1', title: 'Sample Assignment 1', description: 'This is a sample assignment', dueDate: '2023-07-01' },
+        { _id: '2', title: 'Sample Assignment 2', description: 'This is another sample assignment', dueDate: '2023-07-15' },
+      ]);
+      showSnackbar('Failed to fetch assignments. Showing sample data.');
     }
   };
 
@@ -55,14 +58,10 @@ const Assignments = () => {
       const response = await api.get('/users/profile');
       setUserRole(response.data.role);
     } catch (error) {
-      if (error.code === 'ECONNABORTED') {
-        console.error('Request aborted. Retrying...');
-        fetchUserRole();
-      } else if (error.response && error.response.status === 404) {
-        console.error('User profile not found.');
-      } else {
-        console.error('Error fetching user role:', error);
-      }
+      console.error('Error fetching user role:', error);
+      // Default to student role if the API call fails
+      setUserRole('student');
+      showSnackbar('Failed to fetch user role. Defaulting to student.');
     }
   };
 
@@ -70,25 +69,24 @@ const Assignments = () => {
     try {
       const response = editMode
         ? await api.patch(`/assignments/${selectedAssignment._id}`, newAssignment)
-        : await api.post('/assignments', {
-            title: newAssignment.title,
-            description: newAssignment.description,
-            dueDate: newAssignment.dueDate,
-          });
+        : await api.post('/assignments', newAssignment);
       setAssignments(editMode
         ? assignments.map(a => a._id === response.data._id ? response.data : a)
         : [...assignments, response.data]);
       setOpenDialog(false);
-      setNewAssignment({ title: '', description: '', dueDate: '' });
+      setNewAssignment({ title: '', description: '', dueDate: '', class: '' });
       setEditMode(false);
       setSelectedAssignment(null);
+      showSnackbar(editMode ? 'Assignment updated successfully' : 'Assignment created successfully');
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        console.error('Invalid request data:', error.response.data);
-      } else {
-        console.error('Error creating/editing assignment:', error);
-      }
+      console.error('Error creating/editing assignment:', error);
+      showSnackbar(`Failed to ${editMode ? 'update' : 'create'} assignment: ${error.response?.data?.error || 'Unknown error'}`);
     }
+  };
+
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
   };
 
   const handleDeleteAssignment = async (id) => {
@@ -246,6 +244,7 @@ const Assignments = () => {
               onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
               fullWidth
               margin="normal"
+              required
             />
             <TextField
               label="Description"
@@ -255,6 +254,7 @@ const Assignments = () => {
               rows={4}
               fullWidth
               margin="normal"
+              required
             />
             <TextField
               label="Due Date"
@@ -266,6 +266,15 @@ const Assignments = () => {
               InputLabelProps={{
                 shrink: true,
               }}
+              required
+            />
+            <TextField
+              label="Class ID"
+              value={newAssignment.class}
+              onChange={(e) => setNewAssignment({ ...newAssignment, class: e.target.value })}
+              fullWidth
+              margin="normal"
+              required
             />
           </DialogContent>
           <DialogActions>
@@ -277,6 +286,12 @@ const Assignments = () => {
             </Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          message={snackbarMessage}
+        />
       </Container>
     </motion.div>
   );
