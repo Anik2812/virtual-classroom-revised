@@ -44,7 +44,6 @@ const Assignments = () => {
       setAssignments(response.data);
     } catch (error) {
       console.error('Error fetching assignments:', error);
-      // Provide some default assignments if the API call fails
       setAssignments([
         { _id: '1', title: 'Sample Assignment 1', description: 'This is a sample assignment', dueDate: '2023-07-01' },
         { _id: '2', title: 'Sample Assignment 2', description: 'This is another sample assignment', dueDate: '2023-07-15' },
@@ -59,7 +58,6 @@ const Assignments = () => {
       setUserRole(response.data.role);
     } catch (error) {
       console.error('Error fetching user role:', error);
-      // Default to student role if the API call fails
       setUserRole('student');
       showSnackbar('Failed to fetch user role. Defaulting to student.');
     }
@@ -105,17 +103,20 @@ const Assignments = () => {
     try {
       await api.delete(`/assignments/${id}`);
       setAssignments(assignments.filter(a => a._id !== id));
+      showSnackbar('Assignment deleted successfully');
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        console.error('Invalid request data:', error);
-      } else {
-        console.error('Error deleting assignment:', error);
-      }
+      console.error('Error deleting assignment:', error);
+      showSnackbar('Failed to delete assignment');
     }
   };
 
   const openEditDialog = (assignment) => {
-    setNewAssignment({ title: assignment.title, description: assignment.description, dueDate: assignment.dueDate });
+    setNewAssignment({ 
+      title: assignment.title, 
+      description: assignment.description, 
+      dueDate: new Date(assignment.dueDate).toISOString().split('T')[0],
+      class: assignment.class
+    });
     setSelectedAssignment(assignment);
     setEditMode(true);
     setOpenDialog(true);
@@ -137,12 +138,10 @@ const Assignments = () => {
       });
       fetchAssignments();
       setFile(null);
+      showSnackbar('Assignment uploaded successfully');
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        console.error('Invalid request data:', error);
-      } else {
-        console.error('Error uploading assignment:', error);
-      }
+      console.error('Error uploading assignment:', error);
+      showSnackbar('Failed to upload assignment');
     }
   };
 
@@ -154,12 +153,10 @@ const Assignments = () => {
       fetchAssignments();
       setGrade('');
       setFeedback('');
+      showSnackbar('Grade submitted successfully');
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        console.error('Invalid request data:', error);
-      } else {
-        console.error('Error submitting grade:', error);
-      }
+      console.error('Error submitting grade:', error);
+      showSnackbar('Failed to submit grade');
     }
   };
 
