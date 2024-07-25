@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Container, Button, Grid, Paper } from '@mui/material';
+import { Typography, Container, Button, Grid, Paper, Card, CardContent, Avatar } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SchoolIcon from '@mui/icons-material/School';
@@ -25,7 +25,7 @@ const Home = () => {
                 Welcome to Virtual Classroom
               </Typography>
               <Typography variant="h5" paragraph>
-                Experience interactive learning like never before.
+                Experience interactive learning tailored for Indian students.
               </Typography>
               <Button component={Link} to="/login" variant="contained" color="primary" size="large" style={{ marginRight: '1rem' }}>
                 Login
@@ -36,43 +36,86 @@ const Home = () => {
             </motion.div>
           </Grid>
           <Grid item xs={12} md={6}>
-            <motion.div
-              initial={{ y: 1000 }}
-              animate={{ y: 0 }}
-              transition={{ type: 'spring', stiffness: 120, delay: 0.5 }}
-            >
-              <Paper elevation={3} style={{ padding: '2rem', borderRadius: '15px', backgroundColor: '#f0f4f8' }}>
-                <Typography variant="h4" gutterBottom>
-                  Features
+            <img src="/images/online-education.jpg" alt="Online Education" style={{ width: '100%', borderRadius: '15px' }} />
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={4} style={{ marginTop: '2rem' }}>
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom>
+              Features
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} style={{ padding: '1rem', height: '100%' }}>
+              <SchoolIcon style={{ fontSize: 40, color: '#3f51b5' }} />
+              <Typography variant="h6">Live Classes</Typography>
+              <Typography variant="body1">
+                Interactive live classes with experienced teachers following CBSE, ICSE, and State Board curricula.
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} style={{ padding: '1rem', height: '100%' }}>
+              <AssignmentIcon style={{ fontSize: 40, color: '#f50057' }} />
+              <Typography variant="h6">Smart Assignments</Typography>
+              <Typography variant="body1">
+                Personalized assignments and mock tests to prepare for board exams and competitive entrance exams.
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} style={{ padding: '1rem', height: '100%' }}>
+              <ChatIcon style={{ fontSize: 40, color: '#4caf50' }} />
+              <Typography variant="h6">Doubt Clearing</Typography>
+              <Typography variant="body1">
+                Real-time doubt clearing sessions and discussion forums for each subject and topic.
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={4} style={{ marginTop: '2rem' }}>
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom>
+              Testimonials
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Avatar src="/images/student1.jpg" style={{ width: 60, height: 60, margin: 'auto' }} />
+                <Typography variant="h6" align="center">Priya Sharma</Typography>
+                <Typography variant="body2" color="textSecondary" align="center">Class 10, CBSE</Typography>
+                <Typography variant="body1" paragraph style={{ marginTop: '1rem' }}>
+                  "This platform helped me score 95% in my board exams. The teachers are excellent!"
                 </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Paper elevation={2} style={{ padding: '1rem', display: 'flex', alignItems: 'center' }}>
-                      <SchoolIcon style={{ marginRight: '1rem', color: '#3f51b5' }} />
-                      <Typography variant="body1">
-                        Interactive live classes with real-time collaboration
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Paper elevation={2} style={{ padding: '1rem', display: 'flex', alignItems: 'center' }}>
-                      <AssignmentIcon style={{ marginRight: '1rem', color: '#f50057' }} />
-                      <Typography variant="body1">
-                        Easy assignment submission and grading system
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Paper elevation={2} style={{ padding: '1rem', display: 'flex', alignItems: 'center' }}>
-                      <ChatIcon style={{ marginRight: '1rem', color: '#4caf50' }} />
-                      <Typography variant="body1">
-                        Real-time chat and discussion forums for each class
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </Paper>
-            </motion.div>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Avatar src="/images/teacher1.jpg" style={{ width: 60, height: 60, margin: 'auto' }} />
+                <Typography variant="h6" align="center">Rajesh Gupta</Typography>
+                <Typography variant="body2" color="textSecondary" align="center">Physics Teacher</Typography>
+                <Typography variant="body1" paragraph style={{ marginTop: '1rem' }}>
+                  "As a teacher, I find this platform very intuitive. It helps me connect with students effectively."
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card>
+              <CardContent>
+                <Avatar src="/images/student2.jpg" style={{ width: 60, height: 60, margin: 'auto' }} />
+                <Typography variant="h6" align="center">Arjun Patel</Typography>
+                <Typography variant="body2" color="textSecondary" align="center">Class 12, State Board</Typography>
+                <Typography variant="body1" paragraph style={{ marginTop: '1rem' }}>
+                  "The mock tests and personalized feedback have boosted my confidence for upcoming exams."
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
       </Container>
