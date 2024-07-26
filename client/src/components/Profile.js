@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Paper, Typography, TextField, Button, Avatar } from '@mui/material';
+import { Container, Grid, Paper, Typography, TextField, Button, Avatar, Chip } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import api from '../api/axios';
@@ -55,14 +55,14 @@ const Profile = () => {
       <Container maxWidth="md" style={{ marginTop: '2rem' }}>
         <Typography variant="h3" gutterBottom>Profile</Typography>
         <StyledPaper elevation={3}>
-          <LargeAvatar src="/static/images/avatar/1.jpg" alt={user?.username} />
+          <LargeAvatar src="/static/images/avatar/1.jpg" alt={user?.name} />
           <Grid container spacing={3} style={{ marginTop: '1rem' }}>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Username"
-                value={editMode ? updatedUser.username : user?.username}
-                onChange={(e) => setUpdatedUser({ ...updatedUser, username: e.target.value })}
+                label="Name"
+                value={editMode ? updatedUser.name : user?.name}
+                onChange={(e) => setUpdatedUser({ ...updatedUser, name: e.target.value })}
                 disabled={!editMode}
               />
             </Grid>
@@ -72,6 +72,24 @@ const Profile = () => {
                 label="Email"
                 value={editMode ? updatedUser.email : user?.email}
                 onChange={(e) => setUpdatedUser({ ...updatedUser, email: e.target.value })}
+                disabled={!editMode}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Board"
+                value={editMode ? updatedUser.board : user?.board}
+                onChange={(e) => setUpdatedUser({ ...updatedUser, board: e.target.value })}
+                disabled={!editMode}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Standard"
+                value={editMode ? updatedUser.standard : user?.standard}
+                onChange={(e) => setUpdatedUser({ ...updatedUser, standard: e.target.value })}
                 disabled={!editMode}
               />
             </Grid>
@@ -107,6 +125,35 @@ const Profile = () => {
             </Button>
           )}
         </StyledPaper>
+        
+        <Grid container spacing={3} style={{ marginTop: '2rem' }}>
+          <Grid item xs={12} md={6}>
+            <StyledPaper elevation={3}>
+              <Typography variant="h5" gutterBottom>Achievements</Typography>
+              {user?.achievements?.map((achievement, index) => (
+                <Chip
+                  key={index}
+                  label={achievement}
+                  color="primary"
+                  style={{ margin: '0.5rem' }}
+                />
+              ))}
+            </StyledPaper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <StyledPaper elevation={3}>
+              <Typography variant="h5" gutterBottom>Extra-curricular Activities</Typography>
+              {user?.extracurricular?.map((activity, index) => (
+                <Chip
+                  key={index}
+                  label={activity}
+                  color="secondary"
+                  style={{ margin: '0.5rem' }}
+                />
+              ))}
+            </StyledPaper>
+          </Grid>
+        </Grid>
       </Container>
     </motion.div>
   );

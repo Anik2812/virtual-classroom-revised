@@ -61,7 +61,7 @@ const TeacherDashboard = () => {
   };
 
   const handleViewClass = (classId) => {
-    navigate(`/class/${classId}`);
+    navigate(`/assignments/${classId}`);
   };
 
   const showSnackbar = (message) => {
